@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Shortcut Creator</title>
+    
+    <!-- Enhanced PWA Support for iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Shortcut Creator">
+    <meta name="theme-color" content="#0f172a">
+    <!-- Add explicit apple-touch-icon links -->
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --secondary-color: #f9fafb;
+            --background-color: #0f172a;
+            --surface-color: #1e293b;
+            --accent-color: #f59e0b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: rgba(148, 163, 184, 0.2);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius-sm: 0.375rem;
+            --radius: 0.5rem;
+            --radius-lg: 0.75rem;
+            background-color: var(--background-color);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .app-content {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .app-content {
+                flex-direction: row;
+                align-items: center;
+                gap: 2rem;
+            }
+        }
+        
+        /* Left side - Form */
+        .form-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            order: 1;
+        }
+        
+        .headline {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.025em;
+        }
+        
+        .headline span {
+            color: var(--primary-color);
+            display: inline;
+        }
+
+        .headline .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .subheadline {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            color: var(--text-color);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+        }
+        
+        /* Upload icon box - smaller size */
+        .icon-upload-container {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+        }
+        
+        .file-upload {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.875rem;
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius);
+            background-color: var(--surface-color);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            width: 140px;
+            justify-content: center;
+        }
+        
+        .file-upload:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .file-upload svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .file-upload input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-upload p {
+            margin: 0;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+        
+        .file-upload .text-strong {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 0.8125rem;
+        }
+        
+        .file-upload .text-muted {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        
+        .icon-preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .icon-preview {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background-color: var(--surface-color);
+            aspect-ratio: 1;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+        
+        .empty-preview {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .default-preview {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            background-color: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        #iconPreview {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #iconPreview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .crop-btn {
+            padding: 0.5rem 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        
+        .crop-btn:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            font-size: 0.875rem;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Right side - Phone */
+        .phone-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            order: 2;
+        }
+        
+        .iphone-frame {
+            position: relative;
+            width: 280px;
+            height: 570px;
+            margin: 0 auto;
+        }
+        
+        .iphone-svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .fill-device {
+            fill: #404040;
+        }
+        
+        .fill-screen-border {
+            fill: #262626;
+        }
+        
+        .fill-dynamic-island {
+            fill: #000;
+        }
+        
+        .stroke-device {
+            stroke: #404040;
+        }
+        
+        .phone-screen-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            border: 4px solid #404040;
+        }
+        
+        .phone-header {
+            padding: 55px 12px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 5;
+        }
+        
+        .phone-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .phone-stats {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .phone-body {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .preview-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        .phone-icon-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            z-index: 5;
+        }
+        
+        .phone-icon-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .phone-footer {
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+            margin-top: auto;
+        }
+        
+        .action-button {
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 14px;
+            margin-left: auto;
+        }
+        
+        .pixel-grass {
+            bottom: -10px;
+            left: -20px;
+            right: -20px;
+            height: 10px;
+            background: linear-gradient(to right, var(--primary-color), var(--primary-hover));
+        }
+        
+        /* Feedback elements */
+        .error, .success, .instructions {
+            display: none;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+        }
+        
+        .error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .success {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        
+        .instructions {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--accent-color);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        
+        .instructions h3 {
+            color: var(--accent-color);
+            margin-bottom: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .instructions p {
+            margin-bottom: 0.375rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Animation */
+        
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+            border-radius: 999px;
+            font-size: 0.625rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 767px) {
+            .container {
+                padding: 0.75rem;
+            }
+            
+            .app-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .phone-section {
+                order: 1;
+                margin-bottom: 1.5rem;
+            }
+            
+            .form-section {
+                order: 2;
+                gap: 1rem;
+            }
+            
+            .headline {
+                font-size: 1.5rem;
+                margin-bottom: 0.5rem;
+                text-align: center;
+            }
+            
+            .headline .badge {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.625rem;
+                margin-left: 0.25rem;
+            }
+            
+            .subheadline {
+                font-size: 0.875rem;
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+            
+            .iphone-frame {
+                width: 180px;
+                height: 367px;
+            }
+            
+            .phone-header {
+                padding-top: 40px;
+            }
+            
+            .phone-icon-preview {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                border-radius: 12px;
+            }
+            
+            .form-group {
+                margin-bottom: 0.75rem;
+            }
+            
+            
+            
+            .file-upload {
+                width: 100%;
+                padding: 0.75rem;
+            }
+            
+            
+            
+            .file-upload svg {
+                width: 24px;
+                height: 24px;
+                margin-bottom: 0.5rem;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 0.75rem;
+            }
+            
+            .action-button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .crop-container {
+                padding: 1rem;
+                width: 95%;
+            }
+            
+            .crop-image-container {
+                height: 250px;
+            }
+            
+            .crop-description {
+                font-size: 0.7rem;
+            }
+            
+            .zoom-controls {
+                padding: 0 0.5rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .zoom-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 1rem;
+            }
+            
+            .zoom-slider {
+                height: 3px;
+            }
+            
+            .zoom-slider::-webkit-slider-thumb {
+                width: 14px;
+                height: 14px;
+            }
+            
+            .zoom-slider::-moz-range-thumb {
+                width: 14px;
+                height: 14px;
+            }
+        }
+        
+        /* Large desktop sizes */
+        @media (min-width: 1024px) {
+            .container {
+                padding: 2rem;
+                max-width: 1200px;
+            }
+            
+            .app-content {
+                gap: 3rem;
+            }
+            
+            .headline {
+                font-size: 3rem;
+            }
+            
+            .subheadline {
+                font-size: 1.125rem;
+            }
+            
+            .form-control {
+                padding: 0.75rem 1rem;
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+            }
+            
+            .iphone-frame {
+                width: 330px;
+                height: 673px;
+            }
+        }
+        
+        /* Crop Modal */
+        .crop-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .crop-container {
+            background-color: var(--surface-color);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: auto;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .crop-container h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .crop-description {
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .crop-area {
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background-color: #000;
+        }
+        
+        .crop-image-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+        }
+        
+        .crop-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            border: 2px dashed #fff;
+            border-radius: 22.5%; /* iPhone icon corner radius */
+            pointer-events: none;
+            box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Zoom controls */
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 0 1rem;
+        }
+        
+        .zoom-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border-color);
+            outline: none;
+        }
+        
+        .zoom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+        
+        .zoom-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: none;
+        }
+        
+        .zoom-icon {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--text-color);
+            user-select: none;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #cropImage {
+            position: absolute;
+            cursor: move;
+            max-width: none;
+            max-height: none;
+            width: auto;
+            height: auto;
+            min-width: 100%;
+            min-height: 100%;
+            transition: width 0.1s, height 0.1s;
+        }
+        
+        .crop-modal-controls {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .cancel-btn, .apply-btn {
+            padding: 0.625rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.2s ease;
+            border: none;
+        }
+        
+        .cancel-btn {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .cancel-btn:hover {
+            background-color: rgba(148, 163, 184, 0.1);
+        }
+        
+        .apply-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .apply-btn:hover {
+            background-color: var(--primary-hover);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="app-content">
+            <!-- Left side - Form -->
+            <div class="form-section">
+                
+                <div>
+                    <h1 class="headline">
+                        Create your <span>custom shortcut</span>
+                        <span class="badge">iOS</span>
+                    </h1>
+                    <p class="subheadline">Add personalized icons to your home screen in just a few steps</p>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label for="name">Shortcut Name</label>
+                        <input type="text" id="name" class="form-control" placeholder="Enter shortcut name" maxlength="20">
+                    </div>
+                    
+                    <div class="form-group" style="display: none;">
+                        <label for="url">Shortcut URL</label>
+                        <input type="text" id="url" class="form-control" value="https://example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Upload Icon</label>
+                        <div class="icon-upload-container">
+                            <div class="file-upload">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                <p class="text-strong">Drop icon image here</p>
+                                <input type="file" id="icon" accept="image/png, image/jpeg">
+                            </div>
+                            <div class="icon-preview-container">
+                                <div class="icon-preview">
+                                    <div id="iconPreview" class="empty-preview">
+                                        <p>Icon preview</p>
+                                    </div>
+                                </div>
+                                <div class="crop-controls" style="display: none;">
+                                    <button class="crop-btn" id="cropBtn">Crop Icon</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="createShortcut()">Create Shortcut</button>
+                </div>
+                
+                <div class="error" id="error"></div>
+                <div class="success" id="success">
+                    <h3>Shortcut Ready!</h3>
+                    <p>Your shortcut is ready to be added to your home screen.</p>
+                </div>
+                <div class="instructions" id="instructions">
+                    <h3>How to Add to Home Screen</h3>
+                    <p>1. Tap the share icon in Safari</p>
+                    <p>2. Scroll and select "Add to Home Screen"</p>
+                    <p>3. Confirm and tap "Add"</p>
+                </div>
+            </div>
+            
+            <!-- Right side - Phone -->
+            <div class="phone-section">
+                <div class="iphone-frame">
+                  
+                      
+                      <!-- Screen content -->
+                        <div class="phone-screen-content">
+                            <div class="phone-body">
+                                <div style="width: 100%; height: 100%; position: relative; overflow: hidden;">
+                                    <video class="preview-video" autoplay loop muted playsinline>
+                                        <source src="/ScreenRecording_03-14-2025 23-38-04_1.MP4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                <div id="phoneIconPreview" class="phone-icon-preview" style="display: none;"></div>
+                            </div>
+                        </div>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MAX_ICON_SIZE = 1024 * 1024; // 1MB
+        const DEFAULT_ICON_SIZE = 512;
+        let originalImage = null;
+        let croppedImage = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure the manifest exists
+            setupManifest();
+            
+            // Setup name input event listener
+            document.getElementById('name').addEventListener('input', function(e) {
+                const name = e.target.value.trim();
+                const previewName = document.getElementById('previewName');
+                if (previewName) {
+                    previewName.textContent = name || 'Your Shortcut';
+                }
+            });
+        });
+        
+        // Handle file input change
+        document.getElementById('icon').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validation
+                if (file.size > MAX_ICON_SIZE) {
+                    showError('Icon file size must be less than 1MB');
+                    return;
+                }
+                
+                // Clear any previous errors
+                document.getElementById('error').style.display = 'none';
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    
+                    img.onload = function() {
+                        // Save the original image
+                        originalImage = e.target.result;
+                        
+                        // Update the preview
+                        updateIconPreview(originalImage);
+                        
+                        // Show crop controls
+                        document.querySelector('.crop-controls').style.display = 'block';
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Update icon preview 
+        function updateIconPreview(imageSrc) {
+            // Update the preview in the form
+            const iconPreview = document.getElementById('iconPreview');
+            iconPreview.innerHTML = '';
+            iconPreview.className = ''; // Remove empty-preview class
+            
+            const img = document.createElement('img');
+            img.src = imageSrc;
+            iconPreview.appendChild(img);
+            
+            // Update the phone preview
+            const phoneIconPreview = document.getElementById('phoneIconPreview');
+            if (phoneIconPreview) {
+                phoneIconPreview.innerHTML = '';
+                
+                const phoneImg = document.createElement('img');
+                phoneImg.src = imageSrc;
+                phoneIconPreview.appendChild(phoneImg);
+                
+                // Show the phone icon preview
+                phoneIconPreview.style.display = 'block';
+            }
+        }
+        
+        // Handle crop button click
+        document.getElementById('cropBtn').addEventListener('click', function() {
+            if (!originalImage) return;
+            
+            const cropModal = document.createElement('div');
+            cropModal.className = 'crop-modal';
+            
+            const cropContainer = document.createElement('div');
+            cropContainer.className = 'crop-container';
+            
+            const cropTitle = document.createElement('h3');
+            cropTitle.textContent = 'Crop Icon for iPhone';
+            cropContainer.appendChild(cropTitle);
+            
+            const cropDescription = document.createElement('p');
+            cropDescription.className = 'crop-description';
+            cropDescription.textContent = 'Drag the image to position it or use the slider to zoom. The area will be used as your icon.';
+            cropContainer.appendChild(cropDescription);
+            
+            // Zoom controls
+            const zoomControls = document.createElement('div');
+            zoomControls.className = 'zoom-controls';
+            
+            const zoomOutIcon = document.createElement('span');
+            zoomOutIcon.className = 'zoom-icon';
+            zoomOutIcon.innerHTML = '−';
+            zoomControls.appendChild(zoomOutIcon);
+            
+            const zoomSlider = document.createElement('input');
+            zoomSlider.type = 'range';
+            zoomSlider.min = '100';
+            zoomSlider.max = '300';
+            zoomSlider.value = '100';
+            zoomSlider.className = 'zoom-slider';
+            zoomControls.appendChild(zoomSlider);
+            
+            const zoomInIcon = document.createElement('span');
+            zoomInIcon.className = 'zoom-icon';
+            zoomInIcon.innerHTML = '+';
+            zoomControls.appendChild(zoomInIcon);
+            
+            cropContainer.appendChild(zoomControls);
+            
+            const cropArea = document.createElement('div');
+            cropArea.className = 'crop-area';
+            
+            // Create container for image and crop overlay
+            const cropImageContainer = document.createElement('div');
+            cropImageContainer.className = 'crop-image-container';
+            
+            // Image element
+            const cropImg = document.createElement('img');
+            cropImg.src = originalImage;
+            cropImg.id = 'cropImage';
+            cropImageContainer.appendChild(cropImg);
+            
+            // Crop overlay - iPhone icon shape
+            const cropOverlay = document.createElement('div');
+            cropOverlay.className = 'crop-overlay';
+            cropImageContainer.appendChild(cropOverlay);
+            
+            cropArea.appendChild(cropImageContainer);
+            
+            // Crop controls
+            const cropControls = document.createElement('div');
+            cropControls.className = 'crop-modal-controls';
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'cancel-btn';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.onclick = function() {
+                document.body.removeChild(cropModal);
+            };
+            
+            const applyBtn = document.createElement('button');
+            applyBtn.className = 'apply-btn';
+            applyBtn.textContent = 'Apply Crop';
+            applyBtn.onclick = function() {
+                // Apply the crop
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Get image position and crop data
+                const img = document.getElementById('cropImage');
+                const imgRect = img.getBoundingClientRect();
+                const container = cropImageContainer.getBoundingClientRect();
+                const overlay = cropOverlay.getBoundingClientRect();
+                
+                // Get the zoom level
+                const zoomLevel = parseInt(zoomSlider.value) / 100;
+                
+                // Calculate the scale between displayed image and actual image dimensions
+                const scaleX = img.naturalWidth / imgRect.width;
+                const scaleY = img.naturalHeight / imgRect.height;
+                
+                // Calculate the position of the overlay relative to the image
+                const relativeX = overlay.left - imgRect.left;
+                const relativeY = overlay.top - imgRect.top;
+                
+                // Calculate the crop area in original image coordinates
+                const sourceX = Math.max(0, relativeX * scaleX);
+                const sourceY = Math.max(0, relativeY * scaleY);
+                const sourceWidth = Math.min(img.naturalWidth, overlay.width * scaleX);
+                const sourceHeight = Math.min(img.naturalHeight, overlay.height * scaleY);
+                
+                console.log('Crop debug:', {
+                    naturalWidth: img.naturalWidth,
+                    naturalHeight: img.naturalHeight,
+                    displayWidth: imgRect.width,
+                    displayHeight: imgRect.height,
+                    zoomLevel,
+                    scaleX, scaleY,
+                    relativeX, relativeY,
+                    sourceX, sourceY,
+                    sourceWidth, sourceHeight
+                });
+                
+                // Create canvas with target dimensions
+                canvas.width = DEFAULT_ICON_SIZE;
+                canvas.height = DEFAULT_ICON_SIZE;
+                
+                // Draw the cropped portion
+                try {
+                    // Draw the image
+                    ctx.drawImage(
+                        img, 
+                        sourceX, 
+                        sourceY, 
+                        sourceWidth, 
+                        sourceHeight, 
+                        0, 0, 
+                        DEFAULT_ICON_SIZE, 
+                        DEFAULT_ICON_SIZE
+                    );
+                    
+                    // Apply rounded corners for iPhone icon
+                    applyRoundedCorners(ctx, DEFAULT_ICON_SIZE);
+                    
+                    croppedImage = canvas.toDataURL('image/png');
+                    updateIconPreview(croppedImage);
+                } catch (error) {
+                    console.error('Cropping failed:', error);
+                    
+                    // Fallback to center crop if custom crop fails
+                    try {
+                        // Simple center crop as fallback
+                        const size = Math.min(img.naturalWidth, img.naturalHeight);
+                        const x = (img.naturalWidth - size) / 2;
+                        const y = (img.naturalHeight - size) / 2;
+                        
+                        ctx.drawImage(
+                            img,
+                            x, y, size, size,
+                            0, 0, DEFAULT_ICON_SIZE, DEFAULT_ICON_SIZE
+                        );
+                        
+                        // Apply rounded corners
+                        applyRoundedCorners(ctx, DEFAULT_ICON_SIZE);
+                        
+                        croppedImage = canvas.toDataURL('image/png');
+                        updateIconPreview(croppedImage);
+                    } catch (fallbackError) {
+                        console.error('Fallback cropping failed:', fallbackError);
+                        alert('Could not crop the image. Please try a different image.');
+                    }
+                }
+                
+                // Close modal
+                document.body.removeChild(cropModal);
+            };
+            
+            cropControls.appendChild(cancelBtn);
+            cropControls.appendChild(applyBtn);
+            
+            cropContainer.appendChild(cropArea);
+            cropContainer.appendChild(cropControls);
+            cropModal.appendChild(cropContainer);
+            
+            document.body.appendChild(cropModal);
+            
+            // Function to apply rounded corners like iPhone icons
+            function applyRoundedCorners(ctx, size) {
+                const radius = size * 0.225; // iPhone icons have ~22.5% corner radius
+                
+                // Create a temporary canvas for the rounded rectangle
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = size;
+                tempCanvas.height = size;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Draw rounded rectangle
+                tempCtx.beginPath();
+                tempCtx.moveTo(radius, 0);
+                tempCtx.lineTo(size - radius, 0);
+                tempCtx.quadraticCurveTo(size, 0, size, radius);
+                tempCtx.lineTo(size, size - radius);
+                tempCtx.quadraticCurveTo(size, size, size - radius, size);
+                tempCtx.lineTo(radius, size);
+                tempCtx.quadraticCurveTo(0, size, 0, size - radius);
+                tempCtx.lineTo(0, radius);
+                tempCtx.quadraticCurveTo(0, 0, radius, 0);
+                tempCtx.closePath();
+                
+                // Fill with white (will be used as mask)
+                tempCtx.fillStyle = 'white';
+                tempCtx.fill();
+                
+                // Use the rounded rectangle as a mask
+                tempCtx.globalCompositeOperation = 'source-in';
+                tempCtx.drawImage(ctx.canvas, 0, 0, size, size);
+                
+                // Clear original canvas and draw the masked image
+                ctx.clearRect(0, 0, size, size);
+                ctx.drawImage(tempCanvas, 0, 0, size, size);
+            }
+            
+            // Initialize draggable functionality for crop image
+            const img = document.getElementById('cropImage');
+            let isDragging = false;
+            let startX, startY, startLeft, startTop;
+            let currentZoom = 1;
+            
+            // Set initial position
+            img.onload = function() {
+                centerImage();
+            };
+            
+            // Function to center the image
+            function centerImage() {
+                const container = cropImageContainer.getBoundingClientRect();
+                const overlay = cropOverlay.getBoundingClientRect();
+                
+                // Determine which dimension is limiting
+                const containerAspect = container.width / container.height;
+                const imgAspect = img.naturalWidth / img.naturalHeight;
+                
+                let imgWidth, imgHeight;
+                
+                if (imgAspect > containerAspect) {
+                    // Image is wider than container proportionally
+                    imgHeight = container.height;
+                    imgWidth = imgHeight * imgAspect;
+                } else {
+                    // Image is taller than container proportionally
+                    imgWidth = container.width;
+                    imgHeight = imgWidth / imgAspect;
+                }
+                
+                // Apply the base size (before zoom)
+                img.style.width = imgWidth + 'px';
+                img.style.height = imgHeight + 'px';
+                
+                // Now apply zoom
+                imgWidth *= currentZoom;
+                imgHeight *= currentZoom;
+                
+                img.style.width = imgWidth + 'px';
+                img.style.height = imgHeight + 'px';
+                
+                // Center the image
+                const left = (container.width - imgWidth) / 2;
+                const top = (container.height - imgHeight) / 2;
+                
+                img.style.left = left + 'px';
+                img.style.top = top + 'px';
+            }
+            
+            // Zoom slider functionality
+            zoomSlider.addEventListener('input', function() {
+                currentZoom = parseInt(this.value) / 100;
+                
+                // Get current container dimensions
+                const container = cropImageContainer.getBoundingClientRect();
+                const overlay = cropOverlay.getBoundingClientRect();
+                
+                // Calculate the center point of the crop overlay
+                const centerX = (overlay.left + overlay.width / 2) - container.left;
+                const centerY = (overlay.top + overlay.height / 2) - container.top;
+                
+                // Calculate the new width and height
+                const newWidth = img.naturalWidth * currentZoom;
+                const newHeight = img.naturalHeight * currentZoom;
+                
+                // Calculate how the image is currently positioned relative to the crop overlay center
+                const imgRect = img.getBoundingClientRect();
+                const currentImgCenterX = (imgRect.left + imgRect.width / 2) - container.left;
+                const currentImgCenterY = (imgRect.top + imgRect.height / 2) - container.top;
+                
+                // Calculate the offset from the crop overlay center to the image center
+                const offsetX = centerX - currentImgCenterX;
+                const offsetY = centerY - currentImgCenterY;
+                
+                // Apply the new size
+                img.style.width = newWidth + 'px';
+                img.style.height = newHeight + 'px';
+                
+                // Recalculate image position after resize to maintain the same relative positioning
+                const newImgRect = img.getBoundingClientRect();
+                const newImgCenterX = (newImgRect.left + newImgRect.width / 2) - container.left;
+                const newImgCenterY = (newImgRect.top + newImgRect.height / 2) - container.top;
+                
+                // Calculate the position to maintain the same relative position
+                const currentLeft = parseInt(img.style.left) || 0;
+                const currentTop = parseInt(img.style.top) || 0;
+                
+                const adjustedLeft = currentLeft + offsetX - (centerX - newImgCenterX);
+                const adjustedTop = currentTop + offsetY - (centerY - newImgCenterY);
+                
+                // Apply the position
+                img.style.left = adjustedLeft + 'px';
+                img.style.top = adjustedTop + 'px';
+            });
+            
+            // Mouse events for dragging
+            img.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = parseInt(img.style.left) || 0;
+                startTop = parseInt(img.style.top) || 0;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                img.style.left = (startLeft + dx) + 'px';
+                img.style.top = (startTop + dy) + 'px';
+                
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
+            
+            // Touch events for mobile
+            img.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    startLeft = parseInt(img.style.left) || 0;
+                    startTop = parseInt(img.style.top) || 0;
+                    e.preventDefault();
+                }
+            });
+            
+            document.addEventListener('touchmove', function(e) {
+                if (!isDragging || e.touches.length !== 1) return;
+                
+                const dx = e.touches[0].clientX - startX;
+                const dy = e.touches[0].clientY - startY;
+                
+                img.style.left = (startLeft + dx) + 'px';
+                img.style.top = (startTop + dy) + 'px';
+                
+                e.preventDefault();
+            });
+            
+            document.addEventListener('touchend', function() {
+                isDragging = false;
+            });
+            
+            // Zoom in/out button click handlers
+            zoomInIcon.addEventListener('click', function() {
+                const currentValue = parseInt(zoomSlider.value);
+                const newValue = Math.min(parseInt(zoomSlider.max), currentValue + 20);
+                zoomSlider.value = newValue;
+                
+                // Trigger the input event to apply the zoom
+                const event = new Event('input', { bubbles: true });
+                zoomSlider.dispatchEvent(event);
+            });
+            
+            zoomOutIcon.addEventListener('click', function() {
+                const currentValue = parseInt(zoomSlider.value);
+                const newValue = Math.max(parseInt(zoomSlider.min), currentValue - 20);
+                zoomSlider.value = newValue;
+                
+                // Trigger the input event to apply the zoom
+                const event = new Event('input', { bubbles: true });
+                zoomSlider.dispatchEvent(event);
+            });
+            
+            // Initialize
+            centerImage();
+        });
+        
+        // Setup the manifest
+        function setupManifest() {
+            const link = document.querySelector('link[rel="manifest"]');
+            if (!link) {
+                const newLink = document.createElement('link');
+                newLink.rel = 'manifest';
+                newLink.href = 'data:application/json;charset=utf-8,' + 
+                    encodeURIComponent(JSON.stringify({
+                        name: 'Custom Shortcut',
+                        short_name: 'Shortcut',
+                        start_url: '/',
+                        display: 'standalone',
+                        background_color: '#0f172a',
+                        theme_color: '#3b82f6'
+                    }));
+                document.head.appendChild(newLink);
+            }
+        }
+        
+        // Create shortcut function
+        function createShortcut() {
+            const name = document.getElementById('name').value.trim();
+            const url = document.getElementById('url').value.trim() || 'https://example.com';
+            const iconToUse = croppedImage || originalImage;
+            
+            // Validation
+            if (!name) {
+                showError('Please enter a shortcut name!');
+                return;
+            }
+            
+            if (!iconToUse) {
+                showError('Please upload an icon image!');
+                return;
+            }
+            
+            // Create the shortcut
+            saveShortcut(name, url, iconToUse);
+        }
+        
+        // Save the shortcut
+        function saveShortcut(name, url, iconData) {
+            // Update manifest
+            const manifest = {
+                name: name,
+                short_name: name,
+                icons: [{
+                    src: iconData,
+                    sizes: `${DEFAULT_ICON_SIZE}x${DEFAULT_ICON_SIZE}`,
+                    type: "image/png"
+                }],
+                start_url: url,
+                display: "standalone",
+                theme_color: "#3b82f6",
+                background_color: "#0f172a"
+            };
+            
+            // Create a downloadable icon file
+            const iconLink = document.createElement('a');
+            iconLink.href = iconData;
+            iconLink.download = 'icon.png';
+            document.body.appendChild(iconLink);
+            iconLink.click();
+            document.body.removeChild(iconLink);
+            
+            // Update manifest
+            const manifestElement = document.querySelector('link[rel="manifest"]');
+            const manifestURL = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
+            manifestElement.href = manifestURL;
+            
+            // Update apple touch icons
+            updateAppleTouchIcons(iconData);
+            
+            // Set the page title to match the shortcut name
+            document.title = name;
+            const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+            if (appleTitle) {
+                appleTitle.setAttribute('content', name);
+            }
+            
+            // Show success message and instructions
+            document.getElementById('success').style.display = 'block';
+            document.getElementById('instructions').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            
+            // Scroll to instructions
+            document.getElementById('instructions').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Update apple touch icons
+        function updateAppleTouchIcons(iconUrl) {
+            // Remove any existing apple-touch-icon links
+            document.querySelectorAll('link[rel="apple-touch-icon"]').forEach(link => {
+                link.remove();
+            });
+            
+            // Add new apple-touch-icon links
+            const sizes = ['', '152x152', '167x167', '180x180'];
+            sizes.forEach(size => {
+                const link = document.createElement('link');
+                link.rel = 'apple-touch-icon';
+                if (size) link.sizes = size;
+                link.href = iconUrl;
+                document.head.appendChild(link);
+            });
+        }
+        
+        // Utility function for validation
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;  
+            }
+        }
+        
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html> 
