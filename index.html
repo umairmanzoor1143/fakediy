@@ -824,6 +824,89 @@
         .apply-btn:hover {
             background-color: var(--primary-hover);
         }
+        
+        /* Icon type toggle */
+        .icon-type-toggle {
+            display: flex;
+            background-color: var(--surface-color);
+            border-radius: var(--radius);
+            padding: 0.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        .toggle-btn {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .toggle-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Text Icon creator */
+        .text-icon-container {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+        }
+        
+        .text-icon-controls {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .color-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .color-selector label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .color-input {
+            width: 100%;
+            height: 2rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: var(--surface-color);
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .text-preview {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .text-icon-sample {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            background-color: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -852,6 +935,14 @@
                     </div>
                     
                     <div class="form-group">
+                        <label>Icon Type</label>
+                        <div class="icon-type-toggle">
+                            <button class="toggle-btn active" id="imageIconBtn">Image Icon</button>
+                            <button class="toggle-btn" id="textIconBtn">Text Icon</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="imageIconSection">
                         <label>Upload Icon</label>
                         <div class="icon-upload-container">
                             <div class="file-upload">
@@ -869,6 +960,30 @@
                                 </div>
                                 <div class="crop-controls" style="display: none;">
                                     <button class="crop-btn" id="cropBtn">Crop Icon</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="textIconSection" style="display: none;">
+                        <label>Create Text Icon</label>
+                        <div class="text-icon-container">
+                            <div class="text-icon-controls">
+                                <input type="text" id="iconText" class="form-control" placeholder="Enter 1-3 characters" maxlength="3">
+                                <div class="color-selector">
+                                    <label for="bgColor">Background Color</label>
+                                    <input type="color" id="bgColor" value="#3b82f6" class="color-input">
+                                </div>
+                                <div class="color-selector">
+                                    <label for="textColor">Text Color</label>
+                                    <input type="color" id="textColor" value="#ffffff" class="color-input">
+                                </div>
+                            </div>
+                            <div class="icon-preview-container">
+                                <div class="icon-preview">
+                                    <div id="textIconPreview" class="text-preview">
+                                        <div class="text-icon-sample">A</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -931,7 +1046,116 @@
                     previewName.textContent = name || 'Your Shortcut';
                 }
             });
+            
+            // Setup icon type toggle
+            document.getElementById('imageIconBtn').addEventListener('click', function() {
+                setIconType('image');
+            });
+            
+            document.getElementById('textIconBtn').addEventListener('click', function() {
+                setIconType('text');
+            });
+            
+            // Setup text icon inputs
+            document.getElementById('iconText').addEventListener('input', updateTextIconPreview);
+            document.getElementById('bgColor').addEventListener('input', updateTextIconPreview);
+            document.getElementById('textColor').addEventListener('input', updateTextIconPreview);
+            
+            // Initialize text icon preview
+            updateTextIconPreview();
         });
+        
+        // Set icon type (image or text)
+        function setIconType(type) {
+            const imageBtn = document.getElementById('imageIconBtn');
+            const textBtn = document.getElementById('textIconBtn');
+            const imageSection = document.getElementById('imageIconSection');
+            const textSection = document.getElementById('textIconSection');
+            
+            if (type === 'image') {
+                imageBtn.classList.add('active');
+                textBtn.classList.remove('active');
+                imageSection.style.display = 'block';
+                textSection.style.display = 'none';
+            } else {
+                imageBtn.classList.remove('active');
+                textBtn.classList.add('active');
+                imageSection.style.display = 'none';
+                textSection.style.display = 'block';
+            }
+        }
+        
+        // Update text icon preview
+        function updateTextIconPreview() {
+            const text = document.getElementById('iconText').value.trim() || 'A';
+            const bgColor = document.getElementById('bgColor').value;
+            const textColor = document.getElementById('textColor').value;
+            
+            const iconSample = document.querySelector('.text-icon-sample');
+            iconSample.textContent = text.substring(0, 3);
+            iconSample.style.backgroundColor = bgColor;
+            iconSample.style.color = textColor;
+            
+            // Update phone preview if in text mode
+            if (document.getElementById('textIconBtn').classList.contains('active')) {
+                updatePhoneTextIconPreview(text, bgColor, textColor);
+            }
+        }
+        
+        // Update text icon in phone preview
+        function updatePhoneTextIconPreview(text, bgColor, textColor) {
+            const phoneIconPreview = document.getElementById('phoneIconPreview');
+            if (phoneIconPreview) {
+                // Create a canvas to generate an image from the text
+                const canvas = document.createElement('canvas');
+                const size = DEFAULT_ICON_SIZE;
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw background
+                ctx.fillStyle = bgColor;
+                roundRect(ctx, 0, 0, size, size, size * 0.225);
+                ctx.fill();
+                
+                // Draw text
+                const fontSize = Math.floor(size / (text.length > 1 ? 2 : 1.5));
+                ctx.font = `bold ${fontSize}px Inter, sans-serif`;
+                ctx.fillStyle = textColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text.substring(0, 3), size / 2, size / 2);
+                
+                // Convert to image
+                const textIconImage = canvas.toDataURL('image/png');
+                
+                // Update preview
+                phoneIconPreview.innerHTML = '';
+                const phoneImg = document.createElement('img');
+                phoneImg.src = textIconImage;
+                phoneIconPreview.appendChild(phoneImg);
+                
+                // Show the preview
+                phoneIconPreview.style.display = 'block';
+                
+                // Save for later use
+                croppedImage = textIconImage;
+            }
+        }
+        
+        // Draw rounded rectangle on canvas
+        function roundRect(ctx, x, y, width, height, radius) {
+            if (width < 2 * radius) radius = width / 2;
+            if (height < 2 * radius) radius = height / 2;
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.arcTo(x + width, y, x + width, y + height, radius);
+            ctx.arcTo(x + width, y + height, x, y + height, radius);
+            ctx.arcTo(x, y + height, x, y, radius);
+            ctx.arcTo(x, y, x + width, y, radius);
+            ctx.closePath();
+            return ctx;
+        }
         
         // Handle file input change
         document.getElementById('icon').addEventListener('change', function(e) {
@@ -1406,7 +1630,47 @@
         function createShortcut() {
             const name = document.getElementById('name').value.trim();
             const url = document.getElementById('url').value.trim() || 'https://example.com';
-            const iconToUse = croppedImage || originalImage;
+            
+            // Determine which icon type is active
+            const isTextIcon = document.getElementById('textIconBtn').classList.contains('active');
+            
+            let iconToUse;
+            
+            if (isTextIcon) {
+                // Generate text icon if not already generated
+                if (!croppedImage) {
+                    const text = document.getElementById('iconText').value.trim() || 'A';
+                    const bgColor = document.getElementById('bgColor').value;
+                    const textColor = document.getElementById('textColor').value;
+                    
+                    // Create a canvas to generate an image
+                    const canvas = document.createElement('canvas');
+                    const size = DEFAULT_ICON_SIZE;
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Draw background
+                    ctx.fillStyle = bgColor;
+                    roundRect(ctx, 0, 0, size, size, size * 0.225);
+                    ctx.fill();
+                    
+                    // Draw text
+                    const fontSize = Math.floor(size / (text.length > 1 ? 2 : 1.5));
+                    ctx.font = `bold ${fontSize}px Inter, sans-serif`;
+                    ctx.fillStyle = textColor;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(text.substring(0, 3), size / 2, size / 2);
+                    
+                    iconToUse = canvas.toDataURL('image/png');
+                } else {
+                    iconToUse = croppedImage;
+                }
+            } else {
+                // Use uploaded and cropped image
+                iconToUse = croppedImage || originalImage;
+            }
             
             // Validation
             if (!name) {
@@ -1415,7 +1679,11 @@
             }
             
             if (!iconToUse) {
-                showError('Please upload an icon image!');
+                if (isTextIcon) {
+                    showError('Please enter text for your icon!');
+                } else {
+                    showError('Please upload an icon image!');
+                }
                 return;
             }
             
